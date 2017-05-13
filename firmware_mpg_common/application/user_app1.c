@@ -136,9 +136,86 @@ State Machine Function Definitions
 /* Wait for ??? */
 static void UserApp1SM_Idle(void)
 {
-
+  u8 G_u8DebugScanfCharCount=0;
+  u8 u8InputWord;
+  u8 au8RealName[]={'z','s','y'};
+  u8 au8InputName[]={0};
+  u8* pu8Example1;
+  u8* pu8Example2;
+  static u8 u8Count1=0;
+  au8InputName[0]=u8InputWord;
+  pu8Example2=&au8InputName[0];
+  pu8Example1=&au8RealName[0];
+  DebugScanf(pu8Example2);
+  if(au8InputName[0]!='0')
+  {
+    G_u8DebugScanfCharCount++;
+  }
+  if(G_u8DebugScanfCharCount) 
+  {
+    if(* pu8Example1=* pu8Example2)
+    {
+      pu8Example1++;
+    }
+    else
+    {
+      pu8Example1=&au8RealName[0];
+    }
+    if((pu8Example1=&au8RealName[2])&&(* pu8Example2=au8RealName[2]))
+    {
+      u8Count1++;
+      u32 u32Number_=u8Count1;
+      static u32 u32Number1;  
+      static u8 au8OutputPattern[128];  
+      u8 u8Count=0;  
+      u8 u8Index;  
+      u8 u8Index1;
+      u8 u8Index2;
+      u32Number1=u32Number_;
+      while(u32Number_)
+      {    
+        u32Number_=u32Number_/10;     
+        u8Count++;  
+      }
+      au8OutputPattern[0]='z'; 
+      au8OutputPattern[1]='s'; 
+      au8OutputPattern[2]='y'; 
+      au8OutputPattern[3]='\n'; 
+      au8OutputPattern[4]='\r'; 
+      for(u8Index=5;u8Index<(7+u8Count);u8Index++)  
+      {    
+        au8OutputPattern[u8Index]='*';     
+      }
+      au8OutputPattern[u8Index]='\n';  
+      u8Index++;
+      au8OutputPattern[u8Index]='\r'; 
+      u8Index++;
+      au8OutputPattern[u8Index]='*';  
+      for(u8Index1=(u8Index+u8Count);u8Index1>u8Index;u8Index1--)
+      {
+         au8OutputPattern[u8Index1]=((u32Number1%10)+0x30);
+         u32Number1=u32Number1/10;
+      }
+      u8Index=u8Index+u8Count+1;
+      au8OutputPattern[u8Index]='*';
+      u8Index++;
+      au8OutputPattern[u8Index]='\n';  
+      u8Index++; 
+      au8OutputPattern[u8Index]='\r';
+      for(u8Index2=u8Index+1;u8Index2<(u8Index+u8Count+3);u8Index2++)  
+      {    
+        au8OutputPattern[u8Index2]='*';     
+      }
+      u8Index=(u8Index+u8Count+3);
+      au8OutputPattern[u8Index]='\n';  
+      u8Index++; 
+      au8OutputPattern[u8Index]='\r';
+      u8Index++; 
+      au8OutputPattern[u8Index]='\0';
+      DebugPrintf(au8OutputPattern);
+    }
 } /* end UserApp1SM_Idle() */
-    
+ 
 #if 0
 /*-------------------------------------------------------------------------------------------------------------------*/
 /* Handle an error */
