@@ -87,6 +87,7 @@ Promises:
 */
 void UserApp1Initialize(void)
 {
+  
  
   /* If good initialization, set state to Idle */
   if( 1 )
@@ -136,7 +137,73 @@ State Machine Function Definitions
 /* Wait for ??? */
 static void UserApp1SM_Idle(void)
 {
-
+  static u8 au8Message[20]={'Z','H','U',' ',' ','S','U','I',' ',' ','Y','A','O',' ',' ',' ',' ',' ',' ',' '};
+  static u32 u32Count1=0;
+  u8 u8Temp;
+  u8 u8Count2;
+  static u8 u8Count3=0;
+  u32Count1++;
+  if(u32Count1==1)
+  {
+    LCDCommand(LCD_CLEAR_CMD);
+  }
+  if(u32Count1==2)
+  {
+    LCDMessage(LINE1_START_ADDR, au8Message);
+    u8Temp=au8Message[0];
+    for(u8Count2=0;u8Count2<19;u8Count2++)
+    { 
+      au8Message[u8Count2]=au8Message[u8Count2+1];
+    }
+    au8Message[19]=u8Temp;
+    u8Count3++;
+    if(u8Count3==1)
+    {
+      LedOn(RED);
+    }
+    if(u8Count3==2)
+    {
+      LedOn(ORANGE);
+    }
+    if(u8Count3==3)
+    {
+      LedOn(YELLOW);
+    }
+    if(u8Count3==4)
+    {
+      LedOn(GREEN);
+    }
+    if(u8Count3==5)
+    {
+      LedOn(CYAN);
+    }
+    if(u8Count3==6)
+    {
+      LedOn(BLUE);
+    }
+    if(u8Count3==7)
+    {
+      LedOn(PURPLE);
+    }
+    if(u8Count3==8)
+    {
+      LedOn(WHITE);
+      u8Count3=0;
+    }
+  }
+  if(u32Count1==502)
+  {
+    LCDCommand(LCD_CLEAR_CMD);
+    LedOff(PURPLE);
+    LedOff(BLUE);
+    LedOff(CYAN);
+    LedOff(GREEN);
+    LedOff(YELLOW);
+    LedOff(ORANGE);
+    LedOff(RED);
+    LedOff(WHITE);
+    u32Count1=0;
+  }
 } /* end UserApp1SM_Idle() */
     
 #if 0
