@@ -68,7 +68,7 @@ Function Definitions
 /*--------------------------------------------------------------------------------------------------------------------*/
 /* Public functions                                                                                                   */
 /*--------------------------------------------------------------------------------------------------------------------*/
-
+static u16 u16index=0;/*set up a counter for buzzer sound*/
 /*--------------------------------------------------------------------------------------------------------------------*/
 /* Protected functions                                                                                                */
 /*--------------------------------------------------------------------------------------------------------------------*/
@@ -87,6 +87,22 @@ Promises:
 */
 void UserApp1Initialize(void)
 {
+  /*Initialize all ledlight and lcdlight to make them close*/
+  LedOff(WHITE);
+  LedOff(PURPLE);
+  LedOff(GREEN);
+  LedOff(CYAN);
+  LedOff(BLUE);
+  LedOff(YELLOW);
+  LedOff(ORANGE);
+  LedOff(RED);
+  LedOff(LCD_RED);
+  LedOff(LCD_GREEN);
+  LedOff(LCD_BLUE);
+  
+  /*set up buzzer*/
+  PWMAudioSetFrequency(BUZZER1,200);
+
  
   /* If good initialization, set state to Idle */
   if( 1 )
@@ -136,8 +152,121 @@ State Machine Function Definitions
 /* Wait for ??? */
 static void UserApp1SM_Idle(void)
 {
-
+  /*switching between two state machines*/
+  if(WasButtonPressed(BUTTON1))
+  {
+    ButtonAcknowledge(BUTTON1);
+    UserApp1_StateMachine = UserApp1SM_state1;
+  }
+  if(WasButtonPressed(BUTTON2))
+  {
+    ButtonAcknowledge(BUTTON2);
+    UserApp1_StateMachine = UserApp1SM_state2;
+  }
+  
+  /*buzzer operation to meet need */
+  if(u16index==1)
+  {
+    PWMAudioOn(BUZZER1);
+  }
+  if(u16index==100)
+  {
+    PWMAudioOff(BUZZER1);
+  }
+  if(u16index>0&&u16index<1000)
+  {
+    u16index++;
+  }
+  if(u16index==1000)
+  {
+    u16index=1;
+  }
+  
 } /* end UserApp1SM_Idle() */
+    
+static void UserApp1SM_state1(void)
+{
+  /*initialize serial port and ledscreen information*/
+  u8 au8string[]="Entering state 1";
+  u8 au8Message[] = "STATE 1";
+  
+  /*print on serial port*/
+  DebugPrintf(au8string); 
+  
+  /*print on lcdscreen*/
+  LCDCommand(LCD_CLEAR_CMD);
+  LCDMessage(LINE1_START_ADDR, au8Message);
+  
+  /*turn on the necessary light*/
+  LedOn(WHITE);
+  LedOn(PURPLE);
+  LedOn(BLUE);
+  LedOn(CYAN);
+  
+  /*turn off the unnecessary light*/
+  LedOff(GREEN);
+  LedOff(YELLOW);
+  LedOff(ORANGE);
+  LedOff(RED);
+  
+  /*turn on the necesary lcdlight*/
+  LedOn(LCD_RED);
+  LedOn(LCD_BLUE);
+  
+  /*turn off the unnecesary lcdlight*/
+  LedOff(LCD_GREEN);
+  
+  /*turn off buzzer*/
+  PWMAudioOff(BUZZER1);
+  
+  /*break out buzzer sound loop*/
+  u16index=0;
+  
+  /*return Idle*/
+  UserApp1_StateMachine = UserApp1SM_Idle;
+}
+
+static void UserApp1SM_state2(void)
+{
+  /*initialize serial port and ledscreen information*/
+  u8 au8string1[]="Entering state 2";
+  u8 au8Message1[] = "STATE 2";
+  
+  /*print on serial port*/
+  DebugPrintf(au8string1); 
+  
+  /*print on lcdscreen*/
+  LCDCommand(LCD_CLEAR_CMD);
+  LCDMessage(LINE1_START_ADDR, au8Message1);
+  
+  /*turn off the unnecessary light*/
+  LedOff(WHITE);
+  LedOff(PURPLE);
+  LedOff(BLUE);
+  LedOff(CYAN);
+  
+  /*make the necessary light blink*/
+  LedBlink(GREEN, LED_1HZ);
+  LedBlink(YELLOW, LED_2HZ);
+  LedBlink(ORANGE, LED_4HZ);
+  LedBlink(RED, LED_8HZ);
+  
+  /*turn on the necesary lcdlight*/
+  LedOn(LCD_RED);
+  LedOn(LCD_GREEN);
+  
+  /*turn off the unnecesary lcdlight*/
+  LedOff(LCD_BLUE);
+  
+  /*run the buzzer code in Idle*/
+  u16index=0;
+  u16index++;
+  
+  /*return Idle*/
+  UserApp1_StateMachine = UserApp1SM_Idle;
+}
+
+
     
 #if 0
 /*-------------------------------------------------------------------------------------------------------------------*/
