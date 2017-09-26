@@ -69,7 +69,7 @@ Includes
 #include "sdcard.h"
 
 //#include "mpgl1_audio_test.h"
-//#include "mpgl1_board_test.h"
+#include "mpgl1_board_test.h"
 #endif /* MPGL1 */
 
 #ifdef MPGL2
