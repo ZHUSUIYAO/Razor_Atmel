@@ -68,7 +68,8 @@ static u32 UserApp1_u32Timeout;                        /* Timeout counter used a
 static AntAssignChannelInfoType UserApp1_sChannelInfo; /* ANT setup parameters */
 
 static u8 UserApp1_au8MessageFail[] = "\n\r***ANT channel setup failed***\n\n\r";
-
+static u8 au8Counter1[] = {0x30,0x30,0x30,0x30,0x30,0x30};
+static u8 au8Counter2[] = {0x30,0x30,0x30,0x30,0x30,0x30};
 /**********************************************************************************************************************
 Function Definitions
 **********************************************************************************************************************/
@@ -90,20 +91,18 @@ Initializes the State Machine and its variables.
 Requires:
   -
 
-Promises:
+Pro mises:
   - 
 */
 void UserApp1Initialize(void)
 {
-  u8 au8WelcomeMessage[] = "ANT Master";
-
-  /* Write a weclome message on the LCD */
-#if EIE1
-  /* Set a message up on the LCD. Delay is required to let the clear command send. */
+  /*userapp1initialize definition and preparations*/
+  static u8 au8SendAllMessage[] ="Send:";
+  static u8 au8FailMessage[] ="Fail:";
   LCDCommand(LCD_CLEAR_CMD);
-  for(u32 i = 0; i < 10000; i++);
-  LCDMessage(LINE1_START_ADDR, au8WelcomeMessage);
-#endif /* EIE1 */
+  LCDMessage(LINE1_START_ADDR, au8SendAllMessage);
+  LCDMessage(LINE2_START_ADDR, au8FailMessage);
+  LedOff(RED);
   
 #if 0 // untested for MPG2
   
@@ -198,10 +197,11 @@ static void UserApp1SM_AntChannelAssign()
 /* Wait for ??? */
 static void UserApp1SM_Idle(void)
 {
-  static u8 au8TestMessage[] = {0, 0, 0, 0, 0xA5, 0, 0, 0};
+  static u8 au8TestMessage[] = {0x5B, 0, 0, 0, 0xFF, 0, 0, 0};
   u8 au8DataContent[] = "xxxxxxxxxxxxxxxx";
   
   /* Check all the buttons and update au8TestMessage according to the button state */ 
+#if 0 
   au8TestMessage[0] = 0x00;
   if( IsButtonPressed(BUTTON0) )
   {
@@ -214,7 +214,7 @@ static void UserApp1SM_Idle(void)
     au8TestMessage[1] = 0xff;
   }
 
-#ifdef EIE1
+
   au8TestMessage[2] = 0x00;
   if( IsButtonPressed(BUTTON2) )
   {
@@ -226,7 +226,7 @@ static void UserApp1SM_Idle(void)
   {
     au8TestMessage[3] = 0xff;
   }
-#endif /* EIE1 */
+#endif 
   
   if( AntReadAppMessageBuffer() )
   {
@@ -251,6 +251,11 @@ static void UserApp1SM_Idle(void)
     else if(G_eAntApiCurrentMessageClass == ANT_TICK)
     {
      /* Update and queue the new message data */
+     /*make sure that red ledlight is off and when G_au8AntApiCurrentMessageBytes[ANT_TICK_MSG_EVENT_CODE_INDEX]=EVENT_TRANSFER_TX_COMPLETED ,turn off red ledlight*/ 
+      LedOff(RED);
+
+
+      /*three-byte counter for number of messages sent*/
       au8TestMessage[7]++;
       if(au8TestMessage[7] == 0)
       {
@@ -260,7 +265,40 @@ static void UserApp1SM_Idle(void)
           au8TestMessage[5]++;
         }
       }
-      AntQueueBroadcastMessage(ANT_CHANNEL_USERAPP, au8TestMessage);
+ 
+      
+      /*counter for all send messages*/
+      SendCounter();
+      
+      
+      /*judge whether ANT have received the return message*/
+      if(EVENT_TRANSFER_TX_FAILED == G_au8AntApiCurrentMessageBytes[ANT_TICK_MSG_EVENT_CODE_INDEX])
+      {
+        
+        /*turn on red ledlight if the message is failed*/
+        LedOn(RED);
+        
+        /*three-byte counter for number of failed messages*/
+        au8TestMessage[3]++;
+        if(au8TestMessage[3] == 0)
+        {
+          au8TestMessage[2]++;
+          if(au8TestMessage[2] == 0)
+          {
+            au8TestMessage[1]++;
+          }
+        }
+        
+        /*counter for failed messages*/
+        FairCounter();
+      }
+      
+      /*show on lcdscreen*/
+      LCDMessage(LINE1_START_ADDR+5, au8Counter1);
+      LCDMessage(LINE2_START_ADDR+5, au8Counter2);
+      
+      /*send acknowledge type message*/
+      AntQueueAcknowledgedMessage(ANT_CHANNEL_USERAPP, au8TestMessage);
     }
   } /* end AntReadData() */
   
@@ -274,8 +312,67 @@ static void UserApp1SM_Error(void)
   
 } /* end UserApp1SM_Error() */
 
+/*counter for all send messages*/
+static void SendCounter(void)
+{
+  au8Counter1[5]++;
+  if(au8Counter1[5] == 10+0x30)
+  {
+    au8Counter1[5] = 0x30;
+    au8Counter1[4]++;
+    if(au8Counter1[4] == 10+0x30)
+    {
+      au8Counter1[4] = 0x30;
+      au8Counter1[3]++;
+      if(au8Counter1[3] == 10+0x30)
+      {
+        au8Counter1[3] = 0x30;
+        au8Counter1[2]++;
+        if(au8Counter1[2] == 10+0x30)
+        {
+          au8Counter1[2] = 0x30;
+          au8Counter1[1]++;
+          if(au8Counter1[1] == 10+0x30)
+          {
+            au8Counter1[1] = 0x30;
+            au8Counter1[0]++;
+          }
+        }
+      }
+    }
+  }
+}
 
-
+/*counter for failed messages*/
+static void FairCounter(void)
+{
+  au8Counter2[5]++;
+  if(au8Counter2[5] == 10+0x30)
+  {
+    au8Counter2[5] = 0x30;
+    au8Counter2[4]++;
+    if(au8Counter2[4] == 10+0x30)
+    {
+      au8Counter2[4] = 0x30;
+      au8Counter2[3]++;
+      if(au8Counter2[3] == 10+0x30)
+      {
+        au8Counter2[3] = 0x30;
+        au8Counter2[2]++;
+        if(au8Counter2[2] == 10+0x30)
+        {
+          au8Counter2[2] = 0x30;
+          au8Counter2[1]++;
+          if(au8Counter2[1] == 10+0x30)
+          {
+            au8Counter2[1] = 0x30;
+            au8Counter2[0]++;
+          }
+        }
+      }
+    }
+  }
+}
 /*--------------------------------------------------------------------------------------------------------------------*/
 /* End of File                                                                                                        */
 /*--------------------------------------------------------------------------------------------------------------------*/
